@@ -194,6 +194,7 @@ Possible improvements include:
 ---
 
 **Project:** Surgical Tool Detection
+
 **Model:** YOLO11m  
 **Framework:** Ultralytics YOLO  
 **Number of classes:** 5  
