@@ -1,240 +1,201 @@
 # surgical-tool-detection
 
-# Surgical Tool Detection Using Deep Learning
-
-A computer vision project for detecting and localizing surgical instruments in laparoscopic images using **YOLO-based object detection**. The system identifies surgical instruments, predicts their bounding boxes, and assigns confidence scores to detections. The project also investigates dataset balancing and augmentation to improve detection performance across different instrument classes.
-
 ## Overview
 
-Automatic surgical instrument detection is an important task in computer-assisted surgery and surgical video analysis. Identifying instruments in surgical scenes can provide useful information for understanding surgical workflows, analyzing instrument usage, and developing intelligent surgical assistance systems.
+Surgical Tool Recognition Using Deep Learning is a computer vision project that detects and identifies surgical instruments in laparoscopic surgical images using YOLO-based object detection.
 
-This project implements a multi-class object detection pipeline trained on annotated surgical images. It focuses on five surgical instrument categories and evaluates model performance using standard object detection metrics.
+The objective of this project is to develop an automated system that can recognize multiple surgical instruments in a single image, supporting surgical video analysis and potential applications in computer-assisted surgery.
+
+I developed this project using the M2CAI16 Tool Detection dataset and trained an object detection model using the Ultralytics YOLO framework. I also explored dataset balancing and augmentation to study their impact on detection performance.
 
 ## Objectives
 
-- Detect multiple surgical instruments within a single image.
-- Localize each detected instrument using bounding boxes.
-- Classify instruments into five predefined categories.
-- Investigate the impact of dataset imbalance and augmentation on detection performance.
-- Evaluate detection quality using precision, recall, and mean Average Precision (mAP).
-- Explore applications of deep learning in surgical scene understanding.
+- Detect multiple surgical instruments in a single image.
+- Train a deep learning model for surgical instrument detection.
+- Evaluate the model using precision, recall, mAP@50, and mAP@50–95.
+- Investigate the effect of dataset balancing and augmentation on model performance.
+- Explore potential applications in surgical video analysis and computer-assisted systems.
 
-## Surgical Instrument Classes
+## Model Used
 
-The model recognizes the following five classes:
+I used **YOLO11m**, initialized with the pretrained `yolo11m.pt` weights, for surgical instrument detection.
 
-| Class ID | Instrument |
-|---:|---|
-| 0 | Bipolar |
-| 1 | Grasper |
-| 2 | Hook |
-| 3 | Irrigator |
-| 4 | Scissors |
-
-The class IDs correspond to the dataset's YOLO annotation mapping.
-
-## Technology Stack
-
-| Technology | Purpose |
-|---|---|
-| Python | Implementation and experimentation |
-| Ultralytics YOLO | Object detection and model training |
-| PyTorch | Deep learning framework |
-| OpenCV | Image and video processing |
-| Roboflow | Dataset preparation and annotation management |
-| Google Colab | Model training and GPU experimentation |
-| Matplotlib | Training curves and result visualization |
+YOLO is an object detection framework that predicts object locations using bounding boxes and assigns class labels to detected objects. Its ability to detect multiple objects in one image makes it suitable for recognizing surgical instruments that may appear together in a surgical scene.
 
 ## Dataset
 
-The project uses a surgical instrument object detection dataset prepared and annotated using Roboflow.
+I used the **M2CAI16 Tool Detection dataset** for training and evaluating the model. The dataset was prepared in YOLO-compatible format, with images and corresponding bounding-box annotations.
 
-The dataset contains images and corresponding bounding-box labels in YOLO format and is divided into training, validation, and test subsets.
+### Instrument Classes
 
-### Dataset distribution
+The model recognizes five surgical instrument classes:
 
-| Dataset split | Images | Labels |
-|---|---:|---:|
-| Training | 1,740 | 1,740 |
-| Validation | 370 | 370 |
-| Testing | 227 | 227 |
-| **Total** | **2,337** | **2,337** |
+1. **Bipolar**
+2. **Grasper**
+3. **Hook**
+4. **Irrigator**
+5. **Scissors**
 
-Dataset source: [Roboflow](https://roboflow.com/)
+### Dataset Distribution
 
-The project dataset was associated with the Roboflow project `tools-snfsg`. The reported split counts describe the recorded dataset export; subsequent augmentation or balancing may change the effective training data.
+The dataset was divided into training, validation, and test sets.
 
-### YOLO annotation format
+| Dataset split | Number of images |
+|---|---:|
+| Training | 1,740 |
+| Validation | 370 |
+| Testing | 227 |
+| **Total** | **2,337** |
 
-Each image has a corresponding text annotation file. A YOLO bounding-box annotation contains:
-
-```text
-class_id x_center y_center width height
-```
-
-The coordinates are normalized relative to the image width and height.
-
-Images containing multiple instruments can have multiple annotation lines, one for each labeled object.
+The training set was used to optimize the model, the validation set to monitor performance during development, and the held-out test set to evaluate the trained model.
 
 ## Methodology
 
-The project follows an object detection workflow consisting of dataset preparation, model training, evaluation, and inference.
+### 1. Dataset Preparation
 
-1. **Dataset preparation:** Organize the surgical images and their bounding-box annotations.
-2. **Annotation verification:** Check class IDs, image-label correspondence, and bounding-box validity.
-3. **Data augmentation:** Explore transformations and class balancing to address imbalanced instrument representation.
-4. **Model training:** Train a YOLO object detection model using the prepared dataset.
-5. **Validation:** Evaluate predictions on the validation split and monitor training performance.
-6. **Model evaluation:** Measure precision, recall, mAP@50, and mAP@50–95.
-7. **Inference:** Apply trained weights to unseen images or surgical videos and visualize the predicted bounding boxes.
+I prepared the dataset in YOLO format, including images, class labels, and bounding-box annotations. The dataset was divided into training, validation, and test subsets.
 
-## Dataset Balancing and Augmentation
+### 2. Model Training
 
-Surgical instrument datasets can contain unequal numbers of examples across classes. Underrepresented classes may be harder to learn, potentially reducing their individual detection performance.
+I initialized YOLO11m using pretrained weights and configured the model to detect the five surgical instrument classes. The model was trained using the prepared dataset.
 
-The project investigates balancing and augmentation strategies to improve the representation of surgical instrument categories.
+### 3. Dataset Balancing and Augmentation
 
-Augmentation should preserve valid bounding-box annotations. For object detection, geometric transformations must update the coordinates of the affected boxes, and any augmentation strategy should be checked for duplicate samples, invalid boxes, and incorrect class mappings.
+I explored balancing and augmentation to improve the representation of underrepresented instrument classes. The augmented experiment targeted 1,055 annotated instances per class.
 
-The experiments compare a baseline configuration with a rebalanced experiment to investigate the relationship between dataset composition and overall detection performance.
+This experiment allowed me to compare the original training approach with a balanced and augmented approach.
 
-## Model Training
+### 4. Model Evaluation
 
-The project uses the Ultralytics YOLO framework for multi-class object detection.
+I evaluated the detection models using the following metrics:
 
-Training requires a dataset configuration file, commonly named `data.yaml`, containing the paths to the dataset splits and the class mapping.
-
-Example configuration:
-
-```yaml
-train: ../train/images
-val: ../valid/images
-test: ../test/images
-
-nc: 5
-
-names:
-  0: bipolar
-  1: grasper
-  2: hook
-  3: irrigator
-  4: scissors
-```
-
-The paths must match the actual dataset directory structure.
-
-### Training configuration
-
-The training environment previously used for the project included Google Colab with an NVIDIA Tesla T4 GPU and the Ultralytics YOLO framework.
-
-The exact model variant, epoch count, batch size, image size, optimizer, and learning rate should be taken from the final experiment's training configuration (`args.yaml`) rather than inferred from the dataset configuration.
-
-## Evaluation Metrics
-
-The model is evaluated using standard object detection metrics.
-
-- **Precision:** Measures the proportion of predicted detections that are correct.
-- **Recall:** Measures the proportion of ground-truth objects successfully detected.
-- **mAP@50:** Mean Average Precision at an IoU threshold of 0.50.
+- **Precision:** The proportion of predicted detections that were correct.
+- **Recall:** The proportion of ground-truth objects that were detected.
+- **mAP@50:** Mean Average Precision at an Intersection over Union (IoU) threshold of 0.50.
 - **mAP@50–95:** Mean Average Precision averaged across IoU thresholds from 0.50 to 0.95.
-
-Intersection over Union (IoU) measures the overlap between a predicted bounding box and its ground-truth bounding box.
-
-A higher mAP@50 indicates stronger detection performance at the 0.50 IoU threshold, while mAP@50–95 provides a more stringent assessment of detection and localization quality.
 
 ## Experimental Results
 
-The following results were reported during earlier project experiments.
+I compared the baseline model with the model trained using the balanced and augmented dataset. The recorded evaluation results are shown below.
 
-| Experiment | mAP@50 | mAP@50–95 |
+| Metric | Baseline Model | Balanced/Augmented Model |
 |---|---:|---:|
-| Baseline | 96.04% | 58.25% |
-| Rebalanced dataset | 94.51% | 57.64% |
+| Precision | 93.10% | 92.16% |
+| Recall | 95.00% | 91.63% |
+| mAP@50 | 96.04% | 94.51% |
+| mAP@50–95 | 58.25% | 57.64% |
 
-These values are from previously reported experimental runs and should not be interpreted as a verified comparison of the final ZIP's model weights until the corresponding run artifacts are checked.
+The baseline model achieved an **mAP@50 of 96.04%** and an **mAP@50–95 of 58.25%**. It also achieved higher precision and recall than the balanced and augmented experiment.
 
-### Results interpretation
+Although balancing and augmentation were intended to improve class representation, they did not improve the overall reported detection metrics in this comparison. This highlights the importance of evaluating data preparation strategies rather than assuming that a more balanced dataset will always produce better results.
 
-The baseline achieved higher reported mAP values than the rebalanced experiment. This illustrates that balancing a dataset does not automatically improve overall detection performance.
+These metrics describe object detection performance and should not be interpreted as conventional classification accuracy.
 
-The effect of augmentation and balancing should also be assessed using per-class Average Precision, precision, recall, the confusion matrix, and the quality of bounding-box localization. A final comparison should use consistent evaluation settings and the same held-out test set.
+## Technologies Used
+
+- Python
+- PyTorch
+- Ultralytics YOLO
+- OpenCV
+- Roboflow
+- Google Colab
+- NumPy
+- Matplotlib
+
+## Installation
+
+Install the required packages:
+
+```bash
+pip install ultralytics opencv-python numpy matplotlib
+```
+
+## Training
+
+The following is an example of how to initialize YOLO11m and train it using a YOLO-format dataset configuration:
+
+```python
+from ultralytics import YOLO
+
+model = YOLO("yolo11m.pt")
+
+model.train(
+    data="data.yaml",
+    epochs=100,
+    imgsz=640,
+    batch=16
+)
+```
+
+The training parameters shown above are an example configuration. They should be replaced with the actual parameters used in a particular experiment when reproducing the recorded results.
+
+The `data.yaml` file must specify the paths to the training, validation, and test datasets, along with the number of classes and their names.
 
 ## Inference
 
-After training, the saved best-performing weights can be used to detect surgical instruments in new images.
-
-With the Ultralytics Python API:
+After training, a saved model can be used to detect surgical instruments in an image:
 
 ```python
 from ultralytics import YOLO
 
-model = YOLO("path/to/best.pt")
+model = YOLO("best.pt")
 
 results = model.predict(
-    source="path/to/test_image.jpg",
+    source="test_image.jpg",
     conf=0.25,
     save=True
 )
 ```
 
-For video inference:
+The model produces bounding boxes, predicted class labels, and confidence scores for detected instruments. The confidence threshold can be adjusted depending on the application.
 
-```python
-from ultralytics import YOLO
+## Challenges and Observations
 
-model = YOLO("path/to/best.pt")
+During development, I explored several challenges associated with surgical instrument detection:
 
-results = model.predict(
-    source="path/to/surgical_video.mp4",
-    conf=0.25,
-    save=True
-)
-```
+- **Class imbalance:** Some instrument classes have fewer annotated examples than others.
+- **Small or overlapping instruments:** Instruments may be partially visible, overlap with other objects, or appear at different scales.
+- **Dataset augmentation:** Increasing the number of samples does not automatically improve generalization.
+- **Evaluation:** Precision, recall, and mAP provide complementary information about detection performance.
 
-Replace the paths with the actual locations of the trained weights and input files. The confidence threshold can be adjusted to control which detections are retained.
-
-The output includes predicted classes, confidence scores, and bounding boxes for the detected instruments.
+The comparison between the baseline and augmented experiments reinforced the importance of consistent evaluation and careful selection of training strategies.
 
 ## Applications
 
-Potential applications of surgical instrument detection include:
+Potential applications of this project include:
 
-- Surgical video analysis and scene understanding.
-- Instrument localization and usage analysis.
-- Surgical workflow recognition.
-- Computer-assisted surgical training.
-- Research into intelligent and context-aware surgical systems.
+- Surgical video analysis
+- Instrument detection and localization
+- Computer-assisted surgery research
+- Surgical workflow analysis
+- Development of intelligent operating-room systems
+- Medical computer vision research
 
-## Limitations
-
-- Detection performance depends on annotation quality, dataset diversity, and class distribution.
-- Instrument occlusion, motion blur, small objects, and challenging lighting can reduce detection accuracy.
-- Performance on one dataset does not guarantee generalization to different hospitals, procedures, or camera systems.
-- The reported experimental metrics require validation against the corresponding final model and test configuration.
-- This project is intended for educational and research purposes and is not validated for clinical decision-making.
+This project is intended for research and educational purposes. It is not a clinically validated system and should not be used to guide medical decisions.
 
 ## Future Work
 
-- Compare different YOLO model variants under consistent training and evaluation conditions.
-- Improve detection of underrepresented surgical instrument classes.
-- Investigate augmentation methods that preserve annotation integrity.
-- Evaluate performance on independent surgical datasets.
-- Extend image-based detection to real-time surgical video analysis.
-- Explore instrument tracking and surgical workflow recognition.
+Possible improvements include:
 
-## References and Resources
+- Evaluating different YOLO model sizes and architectures.
+- Improving detection of underrepresented instrument classes.
+- Experimenting with class-aware augmentation strategies.
+- Analyzing per-class precision, recall, and average precision.
+- Evaluating performance on longer surgical videos.
+- Exploring real-time inference and deployment.
+- Testing generalization on additional surgical datasets.
 
-- [Ultralytics Documentation](https://docs.ultralytics.com/)
-- [Roboflow](https://roboflow.com/)
-- [OpenCV Documentation](https://docs.opencv.org/)
-- [SurgBench Dataset on Hugging Face](https://huggingface.co/datasets/JianhuiWei/SurgBench_NIPS25)
+## References
 
-## License and Dataset Attribution
+1. CAMMA — Surgical datasets and research resources: https://camma.unistra.fr/datasets/
+2. Ultralytics — YOLO11 documentation: https://docs.ultralytics.com/models/yolo11/
+3. Roboflow — Dataset preparation and annotation tools: https://roboflow.com/
 
-The dataset export was previously associated with a CC BY 4.0 license. Verify the current dataset license and attribution requirements before redistributing images, annotations, or derived datasets.
+---
 
-The code in this repository should have its own clearly specified license if you intend to permit others to reuse it.
+**Project:** Surgical Tool Detection
+**Model:** YOLO11m  
+**Framework:** Ultralytics YOLO  
+**Number of classes:** 5  
+**Primary evaluation metric:** mAP@50
 
-## Disclaimer
-
-This project is an academic and research-oriented implementation of deep learning-based surgical instrument detection. It is not intended to replace professional medical judgment or to be used as a clinically validated medical device.
